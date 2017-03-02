@@ -12,6 +12,7 @@ import json
 import time
 import os
 import errno
+import subprocess
 
 startTime = time.time()
 def timestamp():
@@ -19,17 +20,22 @@ def timestamp():
 
 #Configuration, should make these passable to program
 getLinks = False #Build index of posts
-getComments = True #Download posts
+getComments = False #Download posts
 
 getPostMedia = True #Download media, like jpgs
 getCommentMedia = False
 getMedia = getPostMedia or getCommentMedia
 
-extensions = set([ "jpg", "jpeg", "png", "gif", "webm", "mp3", "mp4" ])
+#extensions = set([ "jpg", "jpeg", "png", "gif", "webm", "mp3", "mp4" ])
+extensions = set([  ])
+useYoutubeDl = True
+YDLSites = [ "youtu", "gfycat", "streamable" ]
 
-retries = 3
 targetFolder = "C:\\Users\\Aarop\\rips\\reddit\\"
 targetSubreddit = "twice"
+youtubeDlLocation = "C:\\Users\\Aarop\\youtube-dl.exe"
+
+retries = 3
 userAgent = "desktop:us.noxim.ripit:v0.0.0 (by /u/noxime)"
 #End of configuration
 
@@ -96,14 +102,24 @@ if(getComments):
 
     print(timestamp() + "s | All comments fetched")
 
+
+
 if(getMedia):
     print(timestamp() + "s | Fetching media")
 
+    folderIndex = 0
+    folderCount = len(next(os.walk(targetFolder))[1])
     for folder in next(os.walk(targetFolder))[1]: #Get all post folders
-        print(timestamp() + "s | Reading post " + folder)
+        print(timestamp() + "s | Reading post " + folder + ", " + str(folderIndex) + "/" + str(folderCount))
+        folderIndex += 1
 
         with open(targetFolder + folder + "\\post.json", "r") as raw:
-            data = json.loads(raw.read())
+            try:
+                data = json.loads(raw.read())
+            except:
+                print(timestamp() + "s | ERROR: " + folder + " has malformed json")
+                continue #Something is wrong with the input data
+
             mediaURL = data[0]["data"]["children"][0]["data"]["url"] #Get the post media
             extension = mediaURL.rsplit(".", 1)[-1]
 
@@ -112,11 +128,24 @@ if(getMedia):
                     postFilename = targetFolder + folder + "\\media\\" + mediaURL.rsplit("/", 1)[-1] #After last / in url
                     os.makedirs(os.path.dirname(postFilename), exist_ok = True) #Create folder if necessary
                     with open(postFilename, "wb") as mediaFile:
-                        req = GET(mediaURL, headers = { "user-agent": userAgent }) #Request data and save to file
-                        for chunk in req:
-                            mediaFile.write(chunk)
+                        try:
+                            req = GET(mediaURL, headers = { "user-agent": userAgent }) #Request data and save to file
+                            for chunk in req:
+                                mediaFile.write(chunk)
+                        except:
+                            print(timestamp() + "s | Failed to retreive " + mediaURL + ", skipping")
+                            continue
 
                     print(timestamp() + "s | Downloaded " + mediaURL) #Logger
+                elif(useYoutubeDl):
+                    for domain in YDLSites:
+                        if(domain in mediaURL):
+                            print(timestamp() + "s | Trying Youtube-DL for " + mediaURL)
+                            #print(targetFolder + folder + "\\media\\%(title)s.%(ext)s")
+                            subprocess.call([ youtubeDlLocation, "-f bestvideo+bestaudio", "-o", targetFolder + folder + "\\media\\%(title)s.%(ext)s", mediaURL ], shell = True)
+                            #subprocess.call([ youtubeDlLocation, "-f bestvideo+bestaudio", mediaURL ])
+                            #time.sleep(2)
+
 
 
 print(timestamp() + "s | Finished")
