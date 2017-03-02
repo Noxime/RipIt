@@ -8,7 +8,7 @@ import errno
 
 
 getLinks = False
-getComments = True
+getComments = False
 targetFolder = "C:\\Users\\Aarop\\rips\\reddit\\"
 targetSubreddit = "twice"
 userAgent = "desktop:us.noxim.ripit:v0.0.0 (by /u/noxime)"
