@@ -6,6 +6,8 @@ import time
 import os
 import errno
 
+startTime = time.time()
+
 
 getLinks = False
 getComments = False
@@ -13,11 +15,9 @@ targetFolder = "C:\\Users\\Aarop\\rips\\reddit\\"
 targetSubreddit = "twice"
 userAgent = "desktop:us.noxim.ripit:v0.0.0 (by /u/noxime)"
 
-
-
 if(getLinks):
 
-    print("Fetching all posts of " + targetSubreddit)
+    print(str(time.time() - startTime) + "s | Fetching all posts of " + targetSubreddit)
 
     #http://apiv2.pushshift.io/reddit/submission/fetch/?subreddit=twice&sort=asc
     page = json.loads(GET("https://apiv2.pushshift.io/reddit/submission/fetch/?sort=asc&subreddit=" + targetSubreddit, headers = { "user-agent": userAgent }).content)
@@ -35,7 +35,7 @@ if(getLinks):
             totalPosts += 1
                 #print(str(entry["data"]["permalink"]).encode("ascii", "ignore")
 
-        print("Finished reading page: " + str(currentPage) + ", at " + str(totalPosts) + " posts now")
+        print(str(time.time() - startTime) + "s | Finished reading page: " + str(currentPage) + ", at " + str(totalPosts) + " posts now")
 
         currentPage += 1
         if "next_page" in page["metadata"]:
@@ -44,17 +44,17 @@ if(getLinks):
             stillLinks = False;
 
     linksFile.close();
-    print("Done fetching all links, saved to " + targetFolder + "links")
+    print(str(time.time() - startTime) + "s | Done fetching all links, saved to " + targetFolder + "links")
 
 if(getComments):
-    print("Fetching comments")
+    print(str(time.time() - startTime) + "s | Fetching comments")
 
     entries = [line.rstrip() for line in open(targetFolder + "links")] #Get all lines
     for index, entry in enumerate(entries):
     #entry = entries[8072] #DEBUG
     #if(True):
 
-        print("Fetching " + entry + ", " + str(index) + "/" + str(len(entries)))
+        print(str(time.time() - startTime) + "s | Fetching " + entry + ", " + str(index) + "/" + str(len(entries)))
         data = GET("https://reddit.com/r/" + targetSubreddit + "/comments/" + entry + "/.json", headers = { "user-agent": userAgent }).text
 
         postFilename = targetFolder + entry + "\\post.json"
@@ -62,4 +62,6 @@ if(getComments):
         with open(postFilename, "w") as post:
             post.write(str(data))
 
-    print("All comments fetched")
+    print(str(time.time() - startTime) + "s | All comments fetched")
+
+print(str(time.time() - startTime) + "s | Finished")
