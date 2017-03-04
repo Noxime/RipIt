@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#RipIt.py
+#RipIt.py, v0.1.0
 #Aaro Perämaa, 2017
 #
 #
@@ -15,8 +15,8 @@ import errno
 import subprocess
 
 #Configuration, should make these passable to program
-getLinks = False #Build index of posts
-getComments = False #Download posts
+getLinks = True #Build index of posts
+getComments = True #Download posts
 
 getPostMedia = True #Download media, like jpgs
 getCommentMedia = False
@@ -27,12 +27,12 @@ extensions = set([ "jpg", "jpeg", "png", "gif", "webm", "mp3", "mp4" ])
 useYoutubeDl = False
 YDLSites = [ "youtu", "streamable", "gfycat" ]
 
-targetFolder = "C:\\Users\\Aarop\\rips\\reddit\\"
+targetFolder = "rips\\reddit\\"
 targetSubreddit = "twice"
-youtubeDlLocation = "C:\\Users\\Aarop\\youtube-dl.exe"
+youtubeDlLocation = "youtube-dl.exe"
 
 retries = 3
-userAgent = "desktop:us.noxim.ripit:v0.0.0 (by /u/noxime)"
+userAgent = "desktop:us.noxim.ripit:v0.1.0 (by /u/noxime)"
 #End of configuration
 
 startTime = time.time()
