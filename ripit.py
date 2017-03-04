@@ -14,10 +14,6 @@ import os
 import errno
 import subprocess
 
-startTime = time.time()
-def timestamp():
-    return "{0:.2f}".format(time.time() - startTime) #Format to 2 decimals
-
 #Configuration, should make these passable to program
 getLinks = False #Build index of posts
 getComments = False #Download posts
@@ -26,10 +22,10 @@ getPostMedia = True #Download media, like jpgs
 getCommentMedia = False
 getMedia = getPostMedia or getCommentMedia
 
-#extensions = set([ "jpg", "jpeg", "png", "gif", "webm", "mp3", "mp4" ])
-extensions = set([  ])
-useYoutubeDl = True
-YDLSites = [ "youtu", "gfycat", "streamable" ]
+extensions = set([ "jpg", "jpeg", "png", "gif", "webm", "mp3", "mp4" ])
+#extensions = set([ ]) #DEBUG
+useYoutubeDl = False
+YDLSites = [ "youtu", "streamable", "gfycat" ]
 
 targetFolder = "C:\\Users\\Aarop\\rips\\reddit\\"
 targetSubreddit = "twice"
@@ -39,6 +35,9 @@ retries = 3
 userAgent = "desktop:us.noxim.ripit:v0.0.0 (by /u/noxime)"
 #End of configuration
 
+startTime = time.time()
+def timestamp():
+    return "{0:.2f}".format(time.time() - startTime) #Format to 2 decimals
 
 if(getLinks):
 
@@ -80,7 +79,10 @@ if(getComments):
     #if(True):
 
         print(timestamp() + "s | Fetching " + entry + ", " + str(index) + "/" + str(len(entries)))
-        req = GET("https://reddit.com/r/" + targetSubreddit + "/comments/" + entry + "/.json", headers = { "user-agent": userAgent })
+        try:
+            req = GET("https://reddit.com/r/" + targetSubreddit + "/comments/" + entry + "/.json", headers = { "user-agent": userAgent })
+        except:
+            continue
         if(req.status_code != 200): #Failed
             tryI = 0
             while(req.status_code != 200 and tryI < retries):
@@ -138,13 +140,17 @@ if(getMedia):
 
                     print(timestamp() + "s | Downloaded " + mediaURL) #Logger
                 elif(useYoutubeDl):
+                    print(timestamp() + "s | NOTE: YoutubeDL support is experimental! Make sure you don't have config set")
+
                     for domain in YDLSites:
                         if(domain in mediaURL):
                             print(timestamp() + "s | Trying Youtube-DL for " + mediaURL)
-                            #print(targetFolder + folder + "\\media\\%(title)s.%(ext)s")
-                            subprocess.call([ youtubeDlLocation, "-f bestvideo+bestaudio", "-o", targetFolder + folder + "\\media\\%(title)s.%(ext)s", mediaURL ], shell = True)
-                            #subprocess.call([ youtubeDlLocation, "-f bestvideo+bestaudio", mediaURL ])
-                            #time.sleep(2)
+
+                            #This is an ass
+                            #proc = subprocess.Popen([ youtubeDlLocation, "-f bestvideo+bestaudio", "-i", "-o", targetFolder + folder + "\\media\\%(title)s.%(ext)s", mediaURL ], stdout = subprocess.PIPE)
+                            proc = subprocess.Popen([ youtubeDlLocation, "-o", targetFolder + folder + "\\media\\abc.%(ext)s", mediaURL ], stdout = subprocess.PIPE)
+                            output = proc.stdout.read()
+                            print(output) #Comment if you dont want your log getting spammed
 
 
 
